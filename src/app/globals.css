@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 밤하늘 팔레트 (기획 dream-archive-plan 기반) */
+  --background: #0a0a18;
+  --foreground: #f4f2fc;
+  --muted: #ccc6ec;
+  --faint: #a59ed0;
+  --accent: #b6a4ff;
+  --lilac: #a99be0;
+  --line: rgba(167, 155, 224, 0.16);
+  --card: rgba(28, 24, 58, 0.45);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-lilac: var(--lilac);
+  --color-line: var(--line);
+  --color-card: var(--card);
+  --font-sans: var(--font-dodum), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: var(--font-batang), serif;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 800px at 80% -10%, rgba(120, 90, 200, 0.3), transparent 60%),
+    radial-gradient(900px 700px at 10% 20%, rgba(70, 110, 160, 0.22), transparent 55%),
+    radial-gradient(1000px 900px at 50% 120%, rgba(180, 120, 180, 0.18), transparent 60%),
+    linear-gradient(180deg, #07060f 0%, #0a0a1c 40%, #0c0a22 100%);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  line-height: 1.8;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
 }
