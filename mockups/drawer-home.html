@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>그림드림 — 프로토타입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:      oklch(0.972 0.008 95);
+    --paper-deep: oklch(0.945 0.010 95);
+    --card:       oklch(0.992 0.004 95);
+    --ink:        oklch(0.34 0.045 260);
+    --ink-soft:   oklch(0.52 0.035 260);
+    --ink-faint:  oklch(0.66 0.025 260);
+    --blue:       oklch(0.50 0.16 256);
+    --blue-deep:  oklch(0.42 0.15 258);
+    --line:       oklch(0.86 0.012 260);
+    --s-xs:4px;--s-sm:8px;--s-md:12px;--s-lg:16px;--s-xl:24px;--s-2xl:32px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"Gowun Dodum",system-ui,sans-serif;line-height:1.6;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+  .app{position:relative;width:100%;max-width:460px;height:100vh;margin:0 auto;overflow:hidden}
+
+  /* view switching */
+  .view{position:absolute;inset:0;padding:var(--s-2xl) var(--s-lg);
+    opacity:0;pointer-events:none;transform:translateX(14px);
+    transition:opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1)}
+  .view.active{opacity:1;pointer-events:auto;transform:none}
+
+  .topbar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--s-2xl)}
+  .brand{font-family:"Gowun Batang",serif;font-weight:700;font-size:1.35rem;letter-spacing:.06em}
+  .count{font-family:"Gowun Batang",serif;font-size:.82rem;color:var(--ink-faint)}
+  .count b{color:var(--blue-deep);font-weight:700}
+  .back{font-size:.9rem;color:var(--ink-soft);background:none;border:none;cursor:pointer;
+    font-family:"Gowun Dodum",sans-serif;display:flex;align-items:center;gap:6px}
+
+  /* ---- A. dresser ---- */
+  .dresser{display:flex;flex-direction:column;gap:var(--s-sm)}
+  .drawer{border:1px solid var(--line);border-radius:7px;background:var(--paper);
+    display:flex;align-items:center;gap:var(--s-md);padding:var(--s-xl) var(--s-lg);
+    cursor:pointer;transition:transform .2s, background .2s}
+  .drawer:hover{background:var(--paper-deep);transform:translateY(-1px)}
+  .drawer:active{transform:translateY(1px)}
+  .pull{flex:0 0 auto;width:40px;height:12px;opacity:.85}
+  .drawer-name{font-family:"Gowun Batang",serif;font-size:1.05rem}
+  .drawer-meta{margin-left:auto;font-size:.78rem;color:var(--ink-faint)}
+  .drawer.deep{opacity:.84}.drawer.deep .drawer-name{color:var(--ink-soft)}
+
+  /* ---- B. open drawer ---- */
+  .tray{position:absolute;left:0;right:0;top:84px;bottom:0;background:var(--paper-deep);
+    border-top:1px solid var(--line);overflow:hidden;touch-action:none}
+  .tray .hint{position:absolute;left:var(--s-lg);bottom:var(--s-md);
+    font-size:.74rem;color:var(--ink-faint)}
+  .dcard{position:absolute;width:118px;height:118px;background:var(--card);
+    border:1px solid var(--line);border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:grab;box-shadow:0 2px 6px oklch(0.45 0.10 258 / .10);
+    transition:transform .55s cubic-bezier(.2,.85,.2,1);will-change:transform}
+  .dcard:active{cursor:grabbing}
+  .dcard .no{position:absolute;left:10px;top:7px;font-family:"Gowun Batang",serif;
+    font-size:.8rem;color:var(--blue-deep);letter-spacing:.03em}
+  .dcard.dragging{box-shadow:0 14px 30px oklch(0.45 0.12 258 / .18);transition:none;z-index:999}
+
+  /* ---- C. detail ---- */
+  .detail-no{font-family:"Gowun Batang",serif;color:var(--blue-deep);font-size:1rem;letter-spacing:.04em;margin-top:var(--s-lg)}
+  .detail-icon{margin:var(--s-lg) 0 var(--s-xl)}
+  .detail-body{font-family:"Gowun Batang",serif;font-size:1.15rem;line-height:1.95;max-width:34ch}
+  .detail-meta{display:flex;gap:var(--s-sm);margin-top:var(--s-2xl);font-size:.8rem;color:var(--ink-faint)}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--ink-soft)}
+
+  /* search */
+  .finder{position:absolute;right:18px;bottom:18px;width:46px;height:46px;border-radius:50%;
+    border:1px solid var(--line);background:var(--paper);display:flex;align-items:center;justify-content:center;
+    opacity:.4;transition:opacity .25s,transform .25s;cursor:pointer;z-index:500}
+  .finder:hover{opacity:.95;transform:scale(1.05)}
+  @media (prefers-reduced-motion:reduce){.dcard,.view{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- A. DRESSER -->
+  <section class="view active" id="v-dresser">
+    <div class="topbar"><div class="brand">그림드림</div><div class="count">발행한 꿈 <b>37</b></div></div>
+    <div class="dresser" id="dresser"></div>
+    <div class="finder" title="찾기 (비상구)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.2"/><path d="M12.6 12.6 L17 17"/></svg></div>
+  </section>
+
+  <!-- B. OPEN DRAWER -->
+  <section class="view" id="v-drawer">
+    <div class="topbar">
+      <button class="back" onclick="go('dresser')">‹ 서랍장</button>
+      <div class="count" id="drawer-title"></div>
+    </div>
+    <div class="tray" id="tray"><span class="hint">뒤적여 꺼내고, 카드를 누르면 펼쳐집니다</span></div>
+  </section>
+
+  <!-- C. DETAIL -->
+  <section class="view" id="v-detail">
+    <div class="topbar"><button class="back" id="detail-back">‹ 서랍</button><div class="count" id="detail-drawer"></div></div>
+    <div class="detail-no" id="detail-no"></div>
+    <div class="detail-icon" id="detail-icon"></div>
+    <div class="detail-body" id="detail-body"></div>
+    <div class="detail-meta" id="detail-meta"></div>
+  </section>
+
+</div>
+
+<script>
+const ICONS = {
+  horse:'<path d="M3 16 C4 11 8 9 12 10 C14 8 16 7 19 6 C18 8 20 9 21 8 C20 11 16 11 15 14 M6 13 L5 19 M10 13 L10 19 M14 13 L14 19 M11 10 C10 12 8 12 6 13"/>',
+  cloud:'<path d="M5 16 C2 16 2 12 5 12 C5 8 11 8 11 12 C15 10 18 13 16 16 Z"/>',
+  moon:'<path d="M17 13 A6.5 6.5 0 1 1 10 5.5 A5 5 0 0 0 17 13 Z"/>',
+  bird:'<path d="M3 13 C7 6 11 6 12 11 C13 6 17 6 21 13 M12 11 L12 18"/>',
+  fish:'<path d="M3 12 C7 7 14 7 17 12 C14 17 7 17 3 12 Z M17 12 L21 9 M17 12 L21 15"/>',
+  key:'<circle cx="7.5" cy="9" r="3.2"/><path d="M9.7 11 L18 19 M15 16 L17 14 M17 18 L19 16"/>',
+  star:'<path d="M12 3 L14 9 L20 9.5 L15.5 13.5 L17 20 L12 16 L7 20 L8.5 13.5 L4 9.5 L10 9 Z"/>',
+  stairs:'<path d="M4 19 L4 15 L9 15 L9 11 L14 11 L14 7 L20 7"/>'
+};
+function svg(name,size){size=size||58;return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>'}
+
+const DRAWERS = [
+  {key:'good',   name:'좋은 꿈',   meta:'12장 · 자주 꺼내봄'},
+  {key:'odd',    name:'이상한 꿈', meta:'9장'},
+  {key:'sad',    name:'슬픈 꿈',   meta:'6장'},
+  {key:'mare',   name:'악몽',      meta:'10장 · 깊이 묻어둠', deep:true},
+];
+const CARDS = {
+  good:[
+    {no:37,icon:'horse', body:'바닷가에서 흰 말이 천천히 걸어왔다. 갈기에서 물방울이 떨어졌고, 나는 무섭지 않았다.',emo:'평온',date:'6월 18일'},
+    {no:33,icon:'cloud', body:'구름 위를 맨발로 걸었던 것 같다. 발바닥이 시원했다.',emo:'평온',date:'6월 14일'},
+    {no:28,icon:'star',  body:'밤하늘에서 별 하나가 내 손바닥으로 떨어졌다.',emo:'기쁨',date:'6월 9일'},
+    {no:21,icon:'bird',  body:'새가 내 이름을 부르며 날아갔다.',emo:'웃김',date:'6월 2일'},
+    {no:15,icon:'fish',  body:'물고기가 하늘을 헤엄쳤다.',emo:'이상함',date:'5월 24일'},
+    {no:9, icon:'moon',  body:'두 개의 달이 떠 있었고 둘 다 나를 보고 있었다.',emo:'평온',date:'5월 11일'},
+  ],
+  odd:[{no:31,icon:'stairs',body:'끝없이 올라가는 계단. 도착하면 다시 1층이었다.',emo:'이상함',date:'6월 12일'},
+       {no:24,icon:'key',body:'낡은 열쇠를 주웠는데 어디 것인지 끝내 몰랐다.',emo:'이상함',date:'6월 5일'}],
+  sad:[{no:19,icon:'cloud',body:'비가 그치지 않는 방에 혼자 앉아 있었다.',emo:'슬픔',date:'5월 30일'}],
+  mare:[{no:12,icon:'stairs',body:'누군가 계단을 빠르게 올라오는 소리. 끝내 보지 못했다.',emo:'무서움',date:'5월 16일'}],
+};
+
+const app=document.querySelector('.app');
+function go(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');}
+
+// build dresser
+const dres=document.getElementById('dresser');
+DRAWERS.forEach(d=>{
+  const el=document.createElement('div');el.className='drawer'+(d.deep?' deep':'');
+  el.innerHTML='<svg class="pull" viewBox="0 0 40 12" fill="none" stroke="var(--blue)" stroke-width="1.6" stroke-linecap="round"><path d="M3 7 C8 2 32 2 37 7"/></svg>'
+    +'<span class="drawer-name">'+d.name+'</span><span class="drawer-meta">'+d.meta+'</span>';
+  el.onclick=()=>openDrawer(d);dres.appendChild(el);
+});
+
+// open drawer with shuffle
+let curDrawer=null;
+function openDrawer(d){
+  curDrawer=d;
+  document.getElementById('drawer-title').textContent=d.name;
+  const tray=document.getElementById('tray');
+  tray.querySelectorAll('.dcard').forEach(n=>n.remove());
+  const W=Math.min(window.innerWidth,460), cx=W/2-59, cy=120;
+  const list=CARDS[d.key]||[];
+  const targets=scatter(list.length, W);
+  list.forEach((c,i)=>{
+    const el=document.createElement('div');el.className='dcard';
+    el.innerHTML='<span class="no">No.'+c.no+'</span>'+svg(c.icon,56);
+    // start: stacked center (shuffled)
+    el.style.left='0px';el.style.top='0px';
+    el.style.transform='translate('+cx+'px,'+cy+'px) rotate('+(i%2?8:-8)+'deg)';
+    el.style.zIndex=i+1;el.style.transition='none';
+    tray.appendChild(el);
+    makeDraggable(el,c);
+    const t=targets[i];
+    // shuffle out
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.style.transition='transform .6s cubic-bezier(.2,.85,.2,1)';
+      el.style.transitionDelay=(i*0.05)+'s';
+      el.style.transform='translate('+t.x+'px,'+t.y+'px) rotate('+t.r+'deg)';
+    }));
+  });
+  go('drawer');
+}
+function scatter(n,W){
+  const pts=[],pad=18,cw=118,maxX=W-cw-pad,trayH=window.innerHeight-84-110;
+  const seed=[ [0.05,0.04,-7],[0.42,0.12,6],[0.16,0.40,-3],[0.55,0.46,9],[0.02,0.66,4],[0.40,0.70,-8],[0.30,0.24,2],[0.58,0.28,-5] ];
+  for(let i=0;i<n;i++){const s=seed[i%seed.length];
+    pts.push({x:pad+s[0]*maxX,y:18+s[1]*trayH,r:s[2]});}
+  return pts;
+}
+
+// drag + click-to-open
+function makeDraggable(el,card){
+  let sx,sy,ox,oy,moved,dragging=false;
+  const m=el.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)\s*rotate\(([-\d.]+)deg\)/);
+  el.onpointerdown=e=>{
+    dragging=true;moved=false;el.setPointerCapture(e.pointerId);
+    const mm=el.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+    ox=mm?parseFloat(mm[1]):0;oy=mm?parseFloat(mm[2]):0;
+    sx=e.clientX;sy=e.clientY;el.classList.add('dragging');
+  };
+  el.onpointermove=e=>{if(!dragging)return;const dx=e.clientX-sx,dy=e.clientY-sy;
+    if(Math.abs(dx)+Math.abs(dy)>5)moved=true;
+    el.style.transform='translate('+(ox+dx)+'px,'+(oy+dy)+'px) rotate(0deg)';};
+  el.onpointerup=e=>{dragging=false;el.classList.remove('dragging');
+    if(!moved)openDetail(card);};
+}
+
+// detail
+function openDetail(c){
+  document.getElementById('detail-drawer').textContent=curDrawer.name;
+  document.getElementById('detail-no').textContent='No.'+c.no;
+  document.getElementById('detail-icon').innerHTML=svg(c.icon,72);
+  document.getElementById('detail-body').textContent=c.body;
+  document.getElementById('detail-meta').innerHTML='<span class="chip">'+c.emo+'</span><span class="chip">'+c.date+'</span>';
+  document.getElementById('detail-back').onclick=()=>go('drawer');
+  go('detail');
+}
+
+// deep-link (screenshots only)
+if(location.hash==='#drawer')openDrawer(DRAWERS[0]);
+else if(location.hash==='#detail'){openDrawer(DRAWERS[0]);setTimeout(()=>openDetail(CARDS.good[0]),30);}
+</script>
+</body>
+</html>

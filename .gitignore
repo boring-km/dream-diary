@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Apple Sign in key + secrets
+secrets/
+*.p8
+
+# impeccable: local skill payload + local settings (regenerable via `npx impeccable install`).
+# .impeccable.md (design context) IS committed.
+.claude/skills/
+.claude/settings.local.json
