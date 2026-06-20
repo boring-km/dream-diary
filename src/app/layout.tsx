@@ -15,8 +15,9 @@ const batang = Gowun_Batang({
 });
 
 export const metadata: Metadata = {
-  title: "꿈 아카이브",
-  description: "자다 깬 꿈을, 흘려보내지 않도록. 한국어 꿈 아카이브.",
+  title: "dream — 꿈 아카이브",
+  description:
+    "꿈을 적으면 손그림 카드 한 장. 서랍에 쌓아 두고 나중에 발굴하는 담백한 아카이브.",
 };
 
 export default function RootLayout({

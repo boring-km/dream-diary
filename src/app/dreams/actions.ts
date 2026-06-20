@@ -11,6 +11,7 @@ function parseDreamForm(formData: FormData) {
   const titleRaw = (formData.get("title") as string)?.trim();
   const dreamedAtRaw = (formData.get("dreamed_at") as string)?.trim();
   const emotionRaw = (formData.get("emotion") as string)?.trim();
+  const sharedRaw = (formData.get("shared") as string)?.trim();
 
   const emotion =
     emotionRaw && EMOTIONS.includes(emotionRaw as DreamEmotion)
@@ -22,6 +23,7 @@ function parseDreamForm(formData: FormData) {
     title: titleRaw || null,
     dreamed_at: dreamedAtRaw || null, // 비면 DB default(오늘)
     emotion,
+    status: sharedRaw === "on" ? "public" : "private", // 기본 나만 보기
   };
 }
 
@@ -42,6 +44,7 @@ export async function createDream(formData: FormData) {
     content: fields.content,
     title: fields.title,
     emotion: fields.emotion,
+    status: fields.status,
     ...(fields.dreamed_at ? { dreamed_at: fields.dreamed_at } : {}),
   });
   if (error) throw new Error(error.message);
@@ -68,6 +71,7 @@ export async function updateDream(id: string, formData: FormData) {
       content: fields.content,
       title: fields.title,
       emotion: fields.emotion,
+      status: fields.status,
       ...(fields.dreamed_at ? { dreamed_at: fields.dreamed_at } : {}),
     })
     .eq("id", id); // RLS가 본인 소유 보장

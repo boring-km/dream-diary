@@ -11,17 +11,20 @@ function SubmitButton({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-accent px-6 py-2.5 font-medium text-[#0a0a18] transition hover:opacity-90 disabled:opacity-50"
+      className="rounded-full bg-blue px-6 py-2.5 text-sm font-medium text-paper transition hover:bg-blue-deep disabled:opacity-50"
     >
-      {pending ? "저장 중…" : label}
+      {pending ? "발행 중…" : label}
     </button>
   );
 }
 
+const chip =
+  "inline-block rounded-full border border-line px-3 py-1.5 text-ink-soft peer-checked:border-blue peer-checked:bg-blue/10 peer-checked:text-blue-deep";
+
 export default function DreamForm({
   action,
   dream,
-  submitLabel = "저장",
+  submitLabel = "발행",
 }: {
   action: (formData: FormData) => void | Promise<void>;
   dream?: Dream;
@@ -29,7 +32,7 @@ export default function DreamForm({
 }) {
   // 새벽 기록 마찰 최소화: 본문만 먼저, 나머지는 접어둠.
   const [showDetails, setShowDetails] = useState(
-    Boolean(dream?.title || dream?.emotion),
+    Boolean(dream?.title || dream?.emotion || dream?.status === "public"),
   );
 
   return (
@@ -40,45 +43,45 @@ export default function DreamForm({
         autoFocus
         defaultValue={dream?.content ?? ""}
         placeholder="떠오르는 대로 적어요. 정리하지 않아도 괜찮아요."
-        rows={10}
-        className="w-full resize-y rounded-2xl border border-line bg-card p-5 text-lg leading-relaxed text-foreground outline-none backdrop-blur placeholder:text-faint focus:border-accent"
+        rows={9}
+        className="w-full resize-y rounded-[10px] border border-line bg-card p-5 font-serif text-[1.1rem] leading-relaxed text-ink outline-none placeholder:font-sans placeholder:text-ink-faint focus:border-blue"
       />
 
       {!showDetails && (
         <button
           type="button"
           onClick={() => setShowDetails(true)}
-          className="self-start text-sm text-faint underline-offset-4 hover:text-accent hover:underline"
+          className="self-start text-sm text-ink-faint underline-offset-4 transition hover:text-blue-deep hover:underline"
         >
-          + 제목·날짜·감정 더하기 (선택)
+          + 제목·날짜·감정·공유 (선택)
         </button>
       )}
 
       {showDetails && (
-        <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card/60 p-5 backdrop-blur">
-          <label className="flex flex-col gap-1.5 text-sm text-faint">
+        <div className="flex flex-col gap-4 rounded-[10px] border border-line bg-card p-5">
+          <label className="flex flex-col gap-1.5 text-sm text-ink-faint">
             제목
             <input
               type="text"
               name="title"
               defaultValue={dream?.title ?? ""}
               placeholder="비우면 날짜로 표시돼요"
-              className="rounded-lg border border-line bg-background/40 px-3 py-2 text-base text-foreground outline-none focus:border-accent"
+              className="rounded-lg border border-line bg-paper px-3 py-2 text-base text-ink outline-none focus:border-blue"
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-sm text-faint">
+          <label className="flex flex-col gap-1.5 text-sm text-ink-faint">
             꿈 꾼 날
             <input
               type="date"
               name="dreamed_at"
               defaultValue={dream?.dreamed_at ?? ""}
-              className="rounded-lg border border-line bg-background/40 px-3 py-2 text-base text-foreground outline-none focus:border-accent [color-scheme:dark]"
+              className="rounded-lg border border-line bg-paper px-3 py-2 text-base text-ink outline-none focus:border-blue"
             />
           </label>
 
-          <fieldset className="flex flex-col gap-2 text-sm text-faint">
-            감정
+          <fieldset className="flex flex-col gap-2 text-sm text-ink-faint">
+            감정 — 어느 서랍에 들어갈까요
             <div className="flex flex-wrap gap-2">
               <label className="cursor-pointer">
                 <input
@@ -88,9 +91,7 @@ export default function DreamForm({
                   defaultChecked={!dream?.emotion}
                   className="peer sr-only"
                 />
-                <span className="inline-block rounded-full border border-line px-3 py-1.5 text-foreground peer-checked:border-accent peer-checked:bg-accent/20">
-                  없음
-                </span>
+                <span className={chip}>없음</span>
               </label>
               {EMOTIONS.map((e) => (
                 <label key={e} className="cursor-pointer">
@@ -101,19 +102,35 @@ export default function DreamForm({
                     defaultChecked={dream?.emotion === e}
                     className="peer sr-only"
                   />
-                  <span className="inline-block rounded-full border border-line px-3 py-1.5 text-foreground peer-checked:border-accent peer-checked:bg-accent/20">
-                    {EMOTION_LABELS[e]}
-                  </span>
+                  <span className={chip}>{EMOTION_LABELS[e]}</span>
                 </label>
               ))}
             </div>
           </fieldset>
+
+          <label className="flex items-center justify-between gap-3 border-t border-line pt-4 text-sm text-ink-soft">
+            <span className="flex flex-col">
+              전시관에 공개
+              <span className="text-[0.78rem] text-ink-faint">
+                끄면 나만 봅니다 (기본)
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              name="shared"
+              defaultChecked={dream?.status === "public"}
+              className="h-5 w-5 shrink-0 accent-[var(--blue)]"
+            />
+          </label>
         </div>
       )}
 
       <div className="flex items-center gap-4">
         <SubmitButton label={submitLabel} />
-        <Link href="/dreams" className="text-sm text-faint hover:text-accent">
+        <Link
+          href="/dreams"
+          className="text-sm text-ink-faint transition hover:text-blue-deep"
+        >
           취소
         </Link>
       </div>
