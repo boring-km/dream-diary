@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import HandIcon from "@/components/HandIcon";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -10,20 +11,22 @@ export default async function Home() {
   if (user) redirect("/dreams");
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-      <div className="mx-auto mb-9 h-28 w-28 rounded-full bg-[radial-gradient(circle_at_38%_35%,#fff8e6,#f0e4c0_45%,#cdbf94_75%,#b3a47e)] shadow-[0_0_60px_14px_rgba(243,236,216,0.35)]" />
-      <h1 className="font-serif text-5xl font-bold leading-tight tracking-tight text-foreground sm:text-6xl">
-        자다 깬 꿈을,
+    <main className="view-in mx-auto flex min-h-dvh max-w-[480px] flex-1 flex-col items-center justify-center px-6 text-center">
+      <div className="mb-8 grid h-20 w-20 place-items-center rounded-2xl border border-line bg-card">
+        <HandIcon name="moon" size={44} />
+      </div>
+      <h1 className="font-serif text-[2rem] font-bold leading-[1.5] tracking-tight text-ink">
+        흘려보낼 뻔한 꿈을,
         <br />
-        흘려보내지 않도록
+        한 장씩 모아요
       </h1>
-      <p className="mt-6 max-w-md font-serif text-lg text-muted">
-        새벽에 꾼 꿈은 눈 뜨면 사라진다. 빠르게 붙잡아 보관하는 한국어 꿈
-        아카이브.
+      <p className="mt-5 max-w-sm font-serif text-[0.98rem] leading-relaxed text-ink-soft">
+        꿈을 적으면 손그림 카드 한 장. 서랍에 쌓아 두고, 나중에 흩어진 더미에서
+        잊은 꿈을 발굴해요.
       </p>
       <Link
         href="/login"
-        className="mt-10 rounded-full bg-accent px-8 py-3 font-medium text-[#0a0a18] transition hover:opacity-90"
+        className="mt-9 rounded-full bg-blue px-8 py-3 text-sm font-medium text-paper transition hover:bg-blue-deep"
       >
         시작하기
       </Link>

@@ -1,42 +1,95 @@
 @import "tailwindcss";
 
+/* 가비아 마음결 — 손글씨 포인트(워드마크·No.번호·라벨)만. 본문은 인쇄체(명조) 유지. */
+/* 상업용 무료 + 웹폰트 임베딩 허용 (눈누/projectnoonnu, jsDelivr CDN). */
+@font-face {
+  font-family: "GabiaMaeumgyeol";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2205@1.0/GabiaMaeumgyeol.woff2")
+    format("woff2");
+  font-weight: normal;
+  font-display: swap;
+}
+
 :root {
-  /* 밤하늘 팔레트 (기획 dream-archive-plan 기반) */
-  --background: #0a0a18;
-  --foreground: #f4f2fc;
-  --muted: #ccc6ec;
-  --faint: #a59ed0;
-  --accent: #b6a4ff;
-  --lilac: #a99be0;
-  --line: rgba(167, 155, 224, 0.16);
-  --card: rgba(28, 24, 58, 0.45);
+  /* 페이퍼 라이트 — 파란 잉크 단색 절제 (.impeccable.md) */
+  --paper: oklch(0.972 0.008 95);
+  --paper-deep: oklch(0.945 0.01 95);
+  --card: oklch(0.992 0.004 95);
+  --ink: oklch(0.34 0.045 260);
+  --ink-soft: oklch(0.52 0.035 260);
+  --ink-faint: oklch(0.66 0.025 260);
+  --blue: oklch(0.5 0.16 256);
+  --blue-deep: oklch(0.42 0.15 258);
+  --line: oklch(0.86 0.012 260);
+
+  /* 시맨틱 별칭 (기존 클래스 호환) */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --muted: var(--ink-soft);
+  --faint: var(--ink-faint);
+  --accent: var(--blue);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-faint: var(--faint);
-  --color-accent: var(--accent);
-  --color-lilac: var(--lilac);
-  --color-line: var(--line);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
   --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-blue: var(--blue);
+  --color-blue-deep: var(--blue-deep);
+  --color-line: var(--line);
+
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-muted: var(--ink-soft);
+  --color-faint: var(--ink-faint);
+  --color-accent: var(--blue);
+
   --font-sans: var(--font-dodum), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-serif: var(--font-batang), serif;
+  --font-hand: "GabiaMaeumgyeol", var(--font-batang), serif;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background:
-    radial-gradient(1200px 800px at 80% -10%, rgba(120, 90, 200, 0.3), transparent 60%),
-    radial-gradient(900px 700px at 10% 20%, rgba(70, 110, 160, 0.22), transparent 55%),
-    radial-gradient(1000px 900px at 50% 120%, rgba(180, 120, 180, 0.18), transparent 60%),
-    linear-gradient(180deg, #07060f 0%, #0a0a1c 40%, #0c0a22 100%);
-  background-attachment: fixed;
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans);
-  line-height: 1.8;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-serif {
   font-family: var(--font-serif);
+}
+
+.font-hand {
+  font-family: var(--font-hand);
+}
+
+/* 화면 진입 — 담백한 페이드. 과하지 않게. */
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.view-in {
+  animation: view-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-in {
+    animation: none;
+  }
 }

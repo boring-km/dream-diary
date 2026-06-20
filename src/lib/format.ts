@@ -6,6 +6,12 @@ export function formatDreamedAt(date: string): string {
   return `${y}년 ${m}월 ${d}일`;
 }
 
+// YYYY-MM-DD → "6월 18일" (카드/칩용 짧은 표기)
+export function formatCardDate(date: string): string {
+  const [, m, d] = date.split("-").map(Number);
+  return `${m}월 ${d}일`;
+}
+
 // 제목 없으면 꿈 꾼 날짜로 대체.
 export function dreamTitle(dream: Pick<Dream, "title" | "dreamed_at">): string {
   return dream.title?.trim() || formatDreamedAt(dream.dreamed_at);
